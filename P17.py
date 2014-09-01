@@ -6,7 +6,7 @@ If all the numbers from 1 to 1000 (one thousand) inclusive were written out in w
 
 NOTE: Do not count spaces or hyphens. For example, 342 (three hundred and forty-two) contains 23 letters and 115 (one hundred and fifteen) contains 20 letters. The use of "and" when writing out numbers is in compliance with British usage.
 """
-def wordify(n):
+def wordify(n, debug=False):
   ones = {
   "0":"",
   "1":"one",
@@ -35,10 +35,10 @@ def wordify(n):
       },
   "2":"twenty",
   "3":"thirty",
-  "4":"fourty",
+  "4":"forty",
   "5":"fifty",
   "6":"sixty",
-  "7":"seven",
+  "7":"seventy",
   "8":"eighty",
   "9":"ninety",
   }
@@ -51,17 +51,16 @@ def wordify(n):
 
   # Determine the word for each number.
   word = []
-  while parts:
-    digits = parts[0]
+  for digits in parts:
     place = order[len(parts)]
 
     if len(digits)==3:
       third = ones[digits[0]]
+      if third: third += " hundred"
       digits = digits[1:]
     else:
       third = ""
 
-    if third: third += " hundred"
 
     if len(digits)==2:
       second = tens[digits[0]]
@@ -75,22 +74,37 @@ def wordify(n):
     else:
       first = ones[digits[0]]
 
-    if (third or second) and first: #TODO: Check British usage: "and" for all 100s?
+    if (third) and (second or first):
       word.extend([third, "and", second, first, place])
     elif third or second or first:
       word.extend([third, second, first, place])
 
-    parts = parts[1:]
-
   wordified_number = " ".join([part for part in word if part])
+  if debug:
+    print "{}  ==>  {} (len:{})".format(n, wordified_number, len(wordified_number))
+
   return wordified_number
 
-
+def condense(word):
+  return word.replace(" ","").replace("-","")
 
 def test():
-  words = "".join([wordify(i) for i in xrange(1,1001)])
-  condensed_words = words.replace(" ","").replace("-","")
-  print len(condensed_words)
+  print "Testing..."
+  test_342 = condense(wordify(342, True))
+
+  print "Calculating ranges:"
+  # Ranges from: http://www.mathblog.dk/project-euler-17-letters-in-the-numbers-1-1000/
+  ranges = [(1,9,36), (10,19,70), (20,99,748), (100,999,20259), (1,1000, 21124)]
+  for (min,max,correct) in ranges:
+    # Prints out individual numbers if set to True.
+    debug = False
+
+    # Count the words created by the inclusive range.
+    words = "".join([wordify(i, debug) for i in xrange(min, max+1)])
+    success = "SUCCESS" if correct==len(condense(words)) else "FAIL"
+
+    # Print out the results...
+    print "[{}-{}]: {} ({})".format(min,max,len(condense(words)),success)
 
 
 if __name__=="__main__":
